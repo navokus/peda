@@ -29,6 +29,7 @@ from skeleton import *
 from shellcode import *
 from utils import *
 import config
+import localfunction
 from nasm import *
 
 REGISTERS = {
@@ -744,6 +745,13 @@ class PEDA(object):
             if "/" in arg[0]:
                 modif = arg[0]
                 arg = arg[1:]
+                
+        # rename
+        idx = localfunction.ContextCode.find_key(arg[0])
+        if not idx is None:
+			arg[0] = idx
+		# end rename
+		        
         if len(arg) == 1 and to_int(arg[0]) != None:
             arg += [to_hex(to_int(arg[0]) + 32)]
 
@@ -3042,6 +3050,21 @@ class PEDACmd(object):
             MYNAME args
             MYNAME env [envname]
         """
+        # show local functions
+        def _show_local_function(name=None):
+            if name is None:
+                name = ""
+            filename = peda.getfile()
+            if filename:
+               filename = os.path.basename(filename)
+            else:
+                filename = None
+            for (k, v) in sorted(localfunction.BinFunction.show(name).items()):
+                if filename and isinstance(v, str) and "#FILENAME#" in v:
+                    v = v.replace("#FILENAME#", filename)
+                msg("%s = %s" % (k, repr(v)))
+            return
+            
         # show options
         def _show_option(name=None):
             if name is None:
@@ -3088,10 +3111,12 @@ class PEDACmd(object):
             _show_arg()
         elif opt.startswith("env"):
             _show_env(name)
+        elif opt.startswith("localfunction"):
+            _show_local_function(name)
         else:
             msg("Unknown show option: %s" % opt)
         return
-    show.options = ["option", "arg", "env"]
+    show.options = ["option", "arg", "env", "localfunction"]
 
     # set [option | arg | env]
     def set(self, *arg):
@@ -4112,11 +4137,31 @@ class PEDACmd(object):
 
         pc = peda.getreg("pc")
         # display register info
-        msg("[%s]" % "registers".center(78, "-"), "blue")
+        msg("%s]" % "[registers".rjust(78, "-"), "blue", "bold")
         self.xinfo("register")
 
         return
-
+    
+    # rename function to human readable
+    def rename(self, *arg):
+        """
+        Rename function
+        Usage:
+            MYNAME address function_name
+        """
+        (address, func_name) = normalize_argv(arg, 2)
+        localfunction.ContextCode.set(hex(address), func_name)
+        return
+        
+    def clear_rename(self, *arg):
+        """
+        Rename function
+        Usage:
+            MYNAME address function_name
+        """
+        localfunction.ContextCode.reset()
+        return
+        
     def context_code(self, *arg):
         """
         Display nearby disassembly at $PC of current execution context
@@ -4134,7 +4179,7 @@ class PEDACmd(object):
         else:
             inst = None
 
-        text = blue("[%s]" % "code".center(78, "-"))
+        text = blue("%s]" % "[code".rjust(78, "-"), "bold")
         msg(text)
         if inst: # valid $PC
             text = ""
@@ -4194,7 +4239,7 @@ class PEDACmd(object):
         if not self._is_running():
             return
 
-        text = blue("[%s]" % "stack".center(78, "-"))
+        text = blue("%s]" % "[stack".rjust(78, "-"), "bold")
         msg(text)
         sp = peda.getreg("sp")
         if peda.is_address(sp):
@@ -4208,7 +4253,7 @@ class PEDACmd(object):
         """
         Display various information of current execution context
         Usage:
-            MYNAME [reg,code,stack,all] [code/stack length]
+            MYNAME [reg,code,stack,all,none] [code/stack length]
         """
 
         (opt, count) = normalize_argv(arg, 2)
@@ -4240,8 +4285,10 @@ class PEDACmd(object):
         # display stack content, forced in case SIGSEGV
         if "stack" in opt or "SIGSEGV" in status:
             self.context_stack(count)
-        msg("[%s]" % ("-"*78), "blue")
-        msg("Legend: %s, %s, %s, value" % (red("code"), blue("data"), green("rodata")))
+            
+        if "none" not in opt:
+            msg("[%s]" % ("-"*78), "blue", "bold")
+            msg("Legend: %s, %s, %s, value" % (red("code"), blue("data"), green("rodata")))
 
         # display stopped reason
         if "SIG" in status:
@@ -5914,6 +5961,7 @@ Alias("jtrace", "peda traceinst j")
 Alias("stack", "peda telescope $sp")
 Alias("viewmem", "peda telescope")
 Alias("reg", "peda xinfo register")
+Alias("pr", "rename")
 
 # misc gdb settings
 peda.execute("set confirm off")

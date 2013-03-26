@@ -16,6 +16,7 @@ import re
 import itertools
 from subprocess import *
 import config
+import localfunction
 
 # http://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
 # http://stackoverflow.com/questions/8856164/class-decorator-decorating-method-in-python
@@ -495,6 +496,12 @@ def format_disasm_code(code, nearby=None):
             else:
                 comment = ""
             line = "%s:%s%s" % (prefix, code, comment)
+            # rename
+            #if "call" in code:
+            for k in localfunction.ContextCode.codes.keys():
+			    line = line.replace(k,localfunction.ContextCode.codes[k][0])
+				    
+			# rename end
             result += line + "\n"
 
     return result.rstrip()

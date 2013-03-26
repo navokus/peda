@@ -1,16 +1,10 @@
 #
-#       PEDA - Python Exploit Development Assistance for GDB
+# PEDA - Python Exploit Development Assistance for GDB
 #
-#       Copyright (C) 2012 Long Le Dinh <longld at vnsecurity.net>
+# Copyright (C) 2012 Long Le Dinh <longld at vnsecurity.net>
 #
-#       License: GPLv3  
+# License: see LICENSE file for details
 #
-
-# change below settings to match your needs
-## BEGIN OF SETTINGS ##
-
-
-## END OF SETTINGS ##
 
 class ContextCode(object):
     """

@@ -3059,7 +3059,7 @@ class PEDACmd(object):
                filename = os.path.basename(filename)
             else:
                 filename = None
-            for (k, v) in sorted(localfunction.BinFunction.show(name).items()):
+            for (k, v) in sorted(localfunction.ContextCode.show(name).items()):
                 if filename and isinstance(v, str) and "#FILENAME#" in v:
                     v = v.replace("#FILENAME#", filename)
                 msg("%s = %s" % (k, repr(v)))
@@ -4151,6 +4151,21 @@ class PEDACmd(object):
         """
         (address, func_name) = normalize_argv(arg, 2)
         localfunction.ContextCode.set(hex(address), func_name)
+        return
+    
+    # load from IDA function name (Shift + F4)
+    def load_local_function(self, *arg):
+        """
+        Load function name from IDA(Shift + F4)
+        Usage:
+            MYNAME filename
+        """
+        (filename,) = normalize_argv(arg, 1)
+        ret = localfunction.ContextCode.load(filename)
+        if ret == 0:
+            print "File not found!"
+        else:
+            print "Loaded!"
         return
         
     def clear_rename(self, *arg):

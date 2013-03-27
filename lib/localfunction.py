@@ -42,7 +42,7 @@ class ContextCode(object):
 
     @staticmethod
     def set(name, value):
-        """set option"""
+        """set function"""
         ContextCode.codes[name] = (value,"")
         return True
     
@@ -82,4 +82,22 @@ class ContextCode(object):
 			result[opt] = ContextCode.codes[opt]
          
         return result
+
+    @staticmethod
+    def load(filename):
+        """load renamed function from IDA (name windows)"""
+        try:
+            fd = open(filename, 'r')
+        
+            for func in fd.readlines():
+                func = func.strip().split()
+                name = func[0]
+                addr = hex(int(func[1],16))
+                ContextCode.set(addr, name)
+            fd.close()
+        except Exception,e: 
+            print str(e)
+            return 0
+        return 1
+        
 

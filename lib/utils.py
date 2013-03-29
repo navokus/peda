@@ -499,9 +499,9 @@ def format_disasm_code(code, nearby=None):
             # rename
             #if "call" in code:
             for k in localfunction.ContextCode.codes.keys():
-			    line = line.replace(k,localfunction.ContextCode.codes[k][0])
-				    
-			# rename end
+                line = line.replace(k,localfunction.ContextCode.codes[k][0])
+                    
+            # rename end
             result += line + "\n"
 
     return result.rstrip()

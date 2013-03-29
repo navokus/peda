@@ -28,7 +28,7 @@ class ContextCode(object):
         """display renamed functions in binary"""
         result = {}
         for opt in ContextCode.codes.keys():
-			result[opt] = ContextCode.codes[opt]
+            result[opt] = ContextCode.codes[opt]
          
         return result
 
@@ -58,31 +58,13 @@ class ContextCode(object):
     
     @staticmethod
     def find_key(val):
-		"""return the key of dictionary dic given the value"""
-		result = [k for k, v in ContextCode.codes.iteritems() if v[0] == val]
-		if not result:
-			return None
-		else:
-			return result[0]
-
-    @staticmethod
-    def help(name=""):
-        """display help info of rename function"""
-        result = {}
-        for f in ContextCode.codes:
-            if name in f and not f.startswith("_"):
-                result[f] = ContextCode.codes[f][1]
-        return result
+        """return the key of dictionary dic given the value"""
+        result = [k for k, v in ContextCode.codes.iteritems() if v[0] == val]
+        if not result:
+            return None
+        else:
+            return result[0]
         
-    @staticmethod
-    def write(filename):
-        """write local function renamed to file"""
-        result = {}
-        for opt in ContextCode.codes.keys():
-			result[opt] = ContextCode.codes[opt]
-         
-        return result
-
     @staticmethod
     def load(filename):
         """load renamed function from IDA (name windows)"""

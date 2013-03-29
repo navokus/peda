@@ -749,9 +749,9 @@ class PEDA(object):
         # rename
         idx = localfunction.ContextCode.find_key(arg[0])
         if not idx is None:
-			arg[0] = idx
-		# end rename
-		        
+            arg[0] = idx
+        # end rename
+                
         if len(arg) == 1 and to_int(arg[0]) != None:
             arg += [to_hex(to_int(arg[0]) + 32)]
 

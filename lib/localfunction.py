@@ -1,7 +1,7 @@
 #
 # PEDA - Python Exploit Development Assistance for GDB
 #
-# Copyright (C) 2012 - Navokus 
+# Copyright (C) 2013 - Navokus 
 #
 # License: see LICENSE file for details
 #
